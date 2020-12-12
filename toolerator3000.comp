@@ -1,0 +1,200 @@
+/********************************************************************************
+Serial communications to arduino for Toolerator3000 EMCO 120P lathe tool turret.
+*********************************************************************************/
+
+component toolerator3000            "Services an arduino based turret controller board for EMCOTurn 120P lathe";
+
+pin in bit toolchange = false       "Receives signal from Linuxcnc M6 that tool change required";
+pin in s32 toolnumber               "Receives data from Linuxcnc M6 Tx (tool no.) requested.";
+pin out bit toolchanged = false     "Sends signal back to Linuxcnc when tool change finished";
+
+option singleton yes;               // makes no sense to have more than one of these components running
+option userspace yes;
+
+// Adapted from serialcon2.comp by author "ArcEye arceyeATmgwareDOTcoDOTuk";
+author "Tome tom-emcATbgpDOTnu";
+license "GPL";
+;;
+
+#include <stdio.h>    /* Standard input/output definitions */
+#include <stdlib.h> 
+#include <stdint.h>   /* Standard types */
+#include <string.h>   /* String function definitions */
+#include <unistd.h>   /* UNIX standard function definitions */
+#include <fcntl.h>    /* File control definitions */
+#include <errno.h>    /* Error number definitions */
+#include <termios.h>  /* POSIX terminal control definitions */
+#include <sys/ioctl.h>
+
+#define BAUDRATE B9600 //#define BAUDRATE B115200
+#define DEVICE "/dev/ttyUSB0" // IF THIS IS NOT THE DEVICE YOUR ARDUINO USES, CHANGE IT
+#define _POSIX_SOURCE 1 /* POSIX compliant source */
+
+int serialport_init();  // predef of later function
+                             
+struct termios toptions;; // port setup
+
+void user_mainloop(void)
+{
+char buffer;
+char ch;
+int checked_toolnumber;
+char myVersionBuffer[1024];
+int  nReadCount;
+int fd = serialport_init();
+char once = 0;
+int nReadCounter = 0;
+
+user_mainloop_init:
+
+    // read and discard 'T' return code from Toolerator3000 (if present), or any other leftover bytes
+    while ( read( fd, myVersionBuffer, 1023) >= 1 ) 
+        usleep(100000); 
+
+    // send version request
+    buffer = 'V';
+    write( fd, &buffer, 1 );
+   
+    // wait for start of reply from toolerator3000
+    int nBytesReady = 0;
+    while (nBytesReady <= 0)
+    {
+        usleep(100000);
+        ioctl(fd, FIONREAD, &nBytesReady );
+
+        // if the reply is taking too long, resend the command
+        if (nReadCounter++ > 30)
+        {
+            // report the error
+            printf("Toolerator3000: Timeout, will retry version request\n");
+            fflush(stdout);
+            
+            nReadCounter = 0;
+            goto user_mainloop_init;
+        }
+    }
+
+    // give a little extra time for the reply transmit to complete
+    usleep(100000);
+    
+    // read the version string
+    nReadCount = read( fd, myVersionBuffer, 1023); 
+    
+    // check if the Toolerator3000 was still booting, and sent the ready prompt (and ignored our version request)
+    if (nReadCount <= 0 || (nReadCount == 1 && myVersionBuffer[0] == 'T'))
+        goto user_mainloop_init;  // restart version request now that the Toolerator3000 is ready
+    
+    // display the version string
+    myVersionBuffer[nReadCount] = 0; // guarantee string is null terminated
+    printf("Toolerator3000 Firmware Version: %s\n", myVersionBuffer );
+    fflush(stdout);
+    
+    while(fd != -1)
+    {
+        usleep(100000);
+        FOR_ALL_INSTS()  
+        { 
+            if(toolchange) //tool change was requested
+            {
+                if (toolnumber >= 1)
+                    checked_toolnumber = (toolnumber-1) % 8 + 1; //Convert tool number to mod-8 so will be always be 1-8
+                    //this let's one have a tool table full of tools for multiple jobs while only using 8 actual tools
+                else
+                {
+                    toolchanged = 1; //if tool number is 0 exit - ie, ignore that request
+                    continue;
+                }     
+                
+                if (!once)  //Only want to write our request to change tool one time
+                {
+                    // flush any extra bytes, possibly from a previous command or unexpected Toolerator3000 reboot
+                    while ( read( fd, myVersionBuffer, 1023) >= 1 ) 
+                        usleep(100000);
+           
+                    // only write command once
+                    once = 1;
+                    
+                    // write the command
+                    buffer = checked_toolnumber + '0';  //this ('0') causes toolnumber to be converted to ascii
+                    write(fd, &buffer, 1);  //write tool number request to Toolerator
+                }
+                
+                if (read(fd,&ch,1) == 1) //waiting for a return character from Toolerator
+                {       
+                    if(ch != buffer)  // if byte read doesn't match tool requested, fail
+                    {
+                       // force reissue command                      
+                       once = 0; 
+                       
+                       // report error to stdout
+                       printf ("Toolerator3000: invalid return code: %c\n", ch);  //something else came back
+                       fflush(stdout);
+                       
+                    } else {
+                       // success!
+                       toolchanged = 1;
+                    }
+                }
+            
+            }
+            else
+            {
+                once = 0;  //reset our one-time variable
+                toolchanged=0; //reset toolchanged back to false to be ready for another request
+            }
+        }           
+    }
+
+    close(fd);
+    exit(0);
+}
+
+//######################################################################
+
+int serialport_init()
+{
+int fd;
+ 
+    fd = open(DEVICE, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (fd == -1)  
+        {
+        perror("init_serialport: Unable to open port ");
+        return -1;
+        }
+    
+    if (tcgetattr(fd, &toptions) < 0) 
+        {
+        perror("init_serialport: Couldn't get term attributes");
+        return -1;
+        }
+    speed_t brate = BAUDRATE; 
+    cfsetispeed(&toptions, brate);
+    cfsetospeed(&toptions, brate);
+    // 8N1
+    toptions.c_cflag &= ~PARENB;
+    toptions.c_cflag &= ~CSTOPB;
+    toptions.c_cflag &= ~CSIZE;
+    toptions.c_cflag |= CS8;
+    // no flow control
+    toptions.c_cflag &= ~CRTSCTS;
+
+    toptions.c_cflag |= CREAD | CLOCAL;  // turn on READ & ignore ctrl lines
+    toptions.c_iflag &= ~(IXON | IXOFF | IXANY); // turn off s/w flow ctrl
+
+    toptions.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // make raw
+    toptions.c_oflag &= ~OPOST; // make raw
+
+    // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
+    toptions.c_cc[VMIN]  = 0;
+    toptions.c_cc[VTIME] = 0;
+    
+    if( tcsetattr(fd, TCSANOW, &toptions) < 0) 
+        {
+        perror("init_serialport: Couldn't set term attributes");
+        return -1;
+        }
+    tcflush(fd, TCIOFLUSH);
+    return fd;
+}
+
+
