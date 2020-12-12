@@ -1,0 +1,199 @@
+Cmp-Mod V01 Created by CvPcb (2014-02-26 BZR 4721)-product date = Sunday, May 10, 2015 'PMt' 04:47:44 PM
+
+BeginCmp
+TimeStamp = /554A47A2;
+Reference = C1;
+ValeurCmp = 1uF Tant 6V;
+IdModule  = discret:C1V5;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A4797;
+Reference = C2;
+ValeurCmp = 6V 100uF;
+IdModule  = discret:C1V8;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A477A;
+Reference = C3;
+ValeurCmp = 25V 470uF;
+IdModule  = discret:C2V10;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A478C;
+Reference = C4;
+ValeurCmp = 1uF Tant;
+IdModule  = discret:C1V5;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A46BF;
+Reference = C5;
+ValeurCmp = 470pf;
+IdModule  = discret:C2;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A474E;
+Reference = C6;
+ValeurCmp = 0.002uF;
+IdModule  = discret:C2;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A5C06;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = led:LED-5MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A5C18;
+Reference = D2;
+ValeurCmp = LED;
+IdModule  = led:LED-5MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CD9ED;
+Reference = IC1;
+ValeurCmp = PC817;
+IdModule  = MW_conn:DIP-4__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CD9FF;
+Reference = IC2;
+ValeurCmp = PC817;
+IdModule  = MW_conn:DIP-4__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA0A;
+Reference = IC3;
+ValeurCmp = PC817;
+IdModule  = MW_conn:DIP-4__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA15;
+Reference = IC4;
+ValeurCmp = PC817;
+IdModule  = MW_conn:DIP-4__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A8F25;
+Reference = P1;
+ValeurCmp = CONN_2;
+IdModule  = connect:bornier2;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A8F1A;
+Reference = P2;
+ValeurCmp = CONN_2;
+IdModule  = connect:bornier2;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A5A62;
+Reference = P3;
+ValeurCmp = CONN_2;
+IdModule  = connect:bornier2;
+EndCmp
+
+BeginCmp
+TimeStamp = /554FC04E;
+Reference = P4;
+ValeurCmp = CONN_6;
+IdModule  = connect:bornier6;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A5C4E;
+Reference = R1;
+ValeurCmp = 220;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A5C43;
+Reference = R2;
+ValeurCmp = 2.2K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A465B;
+Reference = R3;
+ValeurCmp = 6.25K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A46D1;
+Reference = R4;
+ValeurCmp = 20K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA75;
+Reference = R5;
+ValeurCmp = 3.3K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA80;
+Reference = R6;
+ValeurCmp = 3.3K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA8B;
+Reference = R7;
+ValeurCmp = 3.3K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554CDA96;
+Reference = R8;
+ValeurCmp = 3.3K;
+IdModule  = discret:R4;
+EndCmp
+
+BeginCmp
+TimeStamp = /554B7275;
+Reference = SW1;
+ValeurCmp = SW_PUSH;
+IdModule  = discret:SW_PUSH_SMALL;
+EndCmp
+
+BeginCmp
+TimeStamp = /554B7043;
+Reference = SW2;
+ValeurCmp = SW_PUSH;
+IdModule  = discret:SW_PUSH_SMALL;
+EndCmp
+
+BeginCmp
+TimeStamp = /554AA1F9;
+Reference = U1;
+ValeurCmp = arduino_nano;
+IdModule  = arduino:arduino_mini;
+EndCmp
+
+BeginCmp
+TimeStamp = /554A4580;
+Reference = U2;
+ValeurCmp = LMD18245;
+IdModule  = MW_misc:TO-220-15;
+EndCmp
+
+EndListe
